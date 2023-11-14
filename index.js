@@ -29,6 +29,7 @@ async function run() {
     await client.connect();
 
     const addJobCollection = client.db('jobStore').collection('addJob');
+    const bidJobCollection = client.db('jobStore').collection('bidJob');
 
     //add jobs
     app.post('/addJob', async(req, res) =>{
@@ -38,11 +39,48 @@ async function run() {
         res.send(result);
     })
 
-    app.get('/addjob', async(req, res) =>{
+    app.get('/addJob', async(req, res) =>{
         const cursor = addJobCollection.find();
         const result = await cursor.toArray();
         res.send(result);
     })
+
+    app.get('/getMyJob/:email', async(req, res)=>{
+      const email = req.params.email;
+      const filter = {email}
+      const result = await addJobCollection.find(filter).toArray()
+      res.send(result)
+    })
+
+    app.delete('/addJob/:id', async(req, res) =>{
+       const id = req.params.id;
+       const query = {_id: new ObjectId(id)}
+       const result = await addJobCollection.deleteOne(query);
+       res.send(result);
+    })
+
+    app.put('/addJob/:id', async(req, res) =>{
+       const id = req.params.id;
+       const filter = {_id: new ObjectId(id)}
+       const options = {upsert: true};
+       const updateJob = req.body;
+    //  console.log('put route ', upd);
+       const Job = {
+        $set:{
+          email: updateJob.email,    
+          job_title: updateJob.job_title,
+          deadline: updateJob.deadline,
+          Category: updateJob.Category,
+          max_price: updateJob.max_price,
+          min_price: updateJob.min_price,
+          description: updateJob.description,
+        }
+       }
+       const result = await addJobCollection.updateOne(filter, Job, options);
+       res.send(result);
+    })
+
+
 
 // ------------------   new   ---------------------
     app.get("/addjob/:id", async(req, res) =>{
@@ -51,6 +89,64 @@ async function run() {
         const cursor = await addJobCollection.findOne(query)
         res.send(cursor);
     })
+
+    // bid job section
+    app.post('/bidJob', async(req, res) =>{
+      const bidJobs = req.body;
+      console.log(bidJobs);
+      const result = await bidJobCollection.insertOne(bidJobs);
+      res.send(result)
+    })
+
+    app.get('/bidJob', async(req, res) =>{
+      const cursor = bidJobCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+  })
+
+
+  app.get('/bidJob/:email', async(req, res)=>{
+    const email = req.params.email;
+    const filter = {}
+    const result = await bidJobCollection.find(filter).toArray()
+    res.send(result)
+  })
+
+  // http://localhost:1212/myBid?propertyName=propertyNameervalue
+
+  app.get('/myBid', async(req, res)=>{
+    const filter = req.query;
+    const result = await bidJobCollection.find(filter).toArray()
+    res.send(result)
+  })
+
+  app.put('/acceptedBid/:id', async(req, res)=>{
+    const filter = {_id: new ObjectId(req.params.id)}
+    const doc = {
+      $set: {
+        status: "In Progress"
+      }
+    }
+    const result = await bidJobCollection.updateOne(filter, doc, {upsert: true})
+
+    res.send(result)
+
+  })
+
+  // ------------------------------ tik  tik ---------------------------------
+  app.put('/rejectedBid/:id', async(req, res)=>{
+    const filter = {_id: new ObjectId(req.params.id)}
+    const doc = {
+      $set: {
+        status: "Caneled"
+      }
+    }
+
+    const result = await bidJobCollection.updateOne(filter, doc, {upsert: true})
+
+    res.send(result)
+
+  })
 
 
 
