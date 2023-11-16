@@ -7,7 +7,10 @@ const app = express();
 const port = process.env.PORT || 1212;
 
 //middleware
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:5173"],
+  credentials: true,
+}));
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.k5sapwk.mongodb.net/?retryWrites=true&w=majority `;
@@ -34,6 +37,11 @@ async function run() {
       const payload = req.body;
       const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '1h'})
       console.log(token);
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none'
+      }).send({message: "Token created successfully"})
     })
 
     //add jobs
