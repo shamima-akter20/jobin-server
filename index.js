@@ -61,6 +61,10 @@ async function run() {
       }).send({message: "Token created successfully"})
     })
 
+    app.get('/clearToken', async (req, res)=>{
+      res.clearCookie('token', {httpOnly: true}).send({message: 'token clear'})
+    })
+
     //add jobs
     app.post('/addJob', async(req, res) =>{
         const addJobs = req.body;
