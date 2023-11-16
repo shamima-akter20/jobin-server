@@ -53,7 +53,7 @@ async function run() {
     app.post('/createToken', async(req, res)=>{
       const payload = req.body;
       const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '1h'})
-      console.log(token);
+      // console.log(token);
       res.cookie('token', token, {
         httpOnly: true,
         secure: true,
@@ -63,6 +63,22 @@ async function run() {
 
     app.get('/clearToken', async (req, res)=>{
       res.clearCookie('token', {httpOnly: true}).send({message: 'token clear'})
+    })
+
+    app.get('/sortMyBidData/:email', async(req, res)=>{
+      const isAscending = req.query.sort;
+      // console.log(isAscending);
+
+      const sort = {status: 1}
+      console.log(isAscending);
+      if(isAscending == 'true'){
+        console.log('descending');
+        sort.status = -1
+      }
+
+      const result = await bidJobCollection.find({userEmail: req.params.email}).sort(sort).toArray()
+
+      res.send(result)
     })
 
     //add jobs
