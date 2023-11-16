@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken')
 const cors = require('cors');
+const cookieParser = require('cookie-parser')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
@@ -11,7 +12,23 @@ app.use(cors({
   origin: ["http://localhost:5173"],
   credentials: true,
 }));
+
+app.use(cookieParser());
 app.use(express.json());
+
+const verifyToken = async (req, res, next)=>{
+  const token = req.cookies?.token;
+  if(!token){
+    return res.status(401).send({message: 'unauthorized access'})
+  }
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded)=>{
+    if(err){
+      return res.status(401).send({message: 'unauthorized access'})
+    }
+    req.decoded = decoded
+    next()
+  })
+}
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.k5sapwk.mongodb.net/?retryWrites=true&w=majority `;
 
@@ -58,7 +75,7 @@ async function run() {
         res.send(result);
     })
 
-    app.get('/getMyJob/:email', async(req, res)=>{
+    app.get('/getMyJob/:email', verifyToken, async(req, res)=>{
       const email = req.params.email;
       const filter = {email}
       const result = await addJobCollection.find(filter).toArray()
