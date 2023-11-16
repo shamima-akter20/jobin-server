@@ -9,7 +9,7 @@ const port = process.env.PORT || 1212;
 
 //middleware
 app.use(cors({
-  origin: ["http://localhost:5173"],
+  origin: ["http://localhost:5173", "https://a11-jobin-project.web.app", "https://a11-jobin-project.firebaseapp.com"],
   credentials: true,
 }));
 
@@ -53,7 +53,7 @@ async function run() {
     app.post('/createToken', async(req, res)=>{
       const payload = req.body;
       const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '1h'})
-      // console.log(token);
+
       res.cookie('token', token, {
         httpOnly: true,
         secure: true,
@@ -67,17 +67,13 @@ async function run() {
 
     app.get('/sortMyBidData/:email', async(req, res)=>{
       const isAscending = req.query.sort;
-      // console.log(isAscending);
-
       const sort = {status: 1}
       console.log(isAscending);
       if(isAscending == 'true'){
         console.log('descending');
         sort.status = -1
       }
-
       const result = await bidJobCollection.find({userEmail: req.params.email}).sort(sort).toArray()
-
       res.send(result)
     })
 
@@ -212,7 +208,7 @@ async function run() {
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } catch {
     // Ensures that the client will close when you finish/error
