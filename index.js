@@ -28,6 +28,11 @@ async function run() {
     const addJobCollection = client.db('jobStore').collection('addJob');
     const bidJobCollection = client.db('jobStore').collection('bidJob');
 
+    // jwt
+    app.post('/createToken', async(req, res)=>{
+      console.log('I am crating token');
+    })
+
     //add jobs
     app.post('/addJob', async(req, res) =>{
         const addJobs = req.body;
