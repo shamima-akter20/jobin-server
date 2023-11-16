@@ -9,9 +9,6 @@ const port = process.env.PORT || 1212;
 app.use(cors());
 app.use(express.json());
 
-
-console.log(process.env.DB_PASS);
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.k5sapwk.mongodb.net/?retryWrites=true&w=majority `;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -105,10 +102,8 @@ async function run() {
   })
 
 
-  app.get('/bidJob/:email', async(req, res)=>{
-    const email = req.params.email;
-    const filter = {}
-    const result = await bidJobCollection.find(filter).toArray()
+  app.get('/bidJobQuery', async(req, res)=>{
+    const result = await bidJobCollection.find(req.query).toArray()
     res.send(result)
   })
 
@@ -148,6 +143,19 @@ async function run() {
 
   })
 
+  app.put('/completeBid/:id', async(req, res)=>{
+    const filter = {_id: new ObjectId(req.params.id)}
+    const doc = {
+      $set: {
+        status: "Complete"
+      }
+    }
+
+    const result = await bidJobCollection.updateOne(filter, doc, {upsert: true})
+
+    res.send(result)
+
+  })
 
 
     // Send a ping to confirm a successful connection
