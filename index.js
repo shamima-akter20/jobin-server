@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken')
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
@@ -30,7 +31,9 @@ async function run() {
 
     // jwt
     app.post('/createToken', async(req, res)=>{
-      console.log('I am crating token');
+      const payload = req.body;
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '1h'})
+      console.log(token);
     })
 
     //add jobs
